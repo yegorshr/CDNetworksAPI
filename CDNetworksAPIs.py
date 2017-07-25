@@ -34,13 +34,26 @@ srcPADName = browser.SelectPAD(PADsList)
 PADDetails = browser.GetPAD(sessionToken, APIKey ,srcPADName)
 PadSAM = browser.GetPADSam(sessionToken, APIKey ,srcPADName)
 
-# Get PAD details and SAM info, output will be writen to file as it too long to show on screen.
-logFile = open(srcPADName+'Details.'+base.APIFORMAT, 'w')
-pp = PrettyPrinter(indent=4, stream=logFile)
-pp.pprint(PADDetails)
-pprint("File name for PAD details is %s" % logFile.name)
-logFile = open(srcPADName+'SAMRules.'+base.APIFORMAT, 'w')
-pp = PrettyPrinter(indent=4, stream=logFile)
-pp.pprint(PadSAM)
-pprint("File name for PAD SAM rules is %s" % logFile.name)
+if args.action == 'Browse':
+	# Get PAD details and SAM info, output will be writen to file as it too long to show on screen.
+	logFile = open(srcPADName+'Details.'+base.APIFORMAT, 'w')
+	pp = PrettyPrinter(indent=4, stream=logFile)
+	pp.pprint(PADDetails)
+	pprint("File name for PAD details is %s" % logFile.name)
+	logFile = open(srcPADName+'SAMRules.'+base.APIFORMAT, 'w')
+	pp = PrettyPrinter(indent=4, stream=logFile)
+	pp.pprint(PadSAM)
+	pprint("File name for PAD SAM rules is %s" % logFile.name)
+
+if args.action == 'ClonePAD':
+	params = {
+		'sessionToken': sessionToken,
+		'apiKey': APIKey,
+		'output': base.APIFORMAT }
+		
+	ContractList = base.RunRestAPI('pan/contract/list',params)
+	pprint(ContractList['PadConfigResponse']['data']['data'])
+	#ContractNumber = ContractList['PadConfigResponse']['data']['data'][0]['contract_no']
+	#pprint (CreatePAD(sessionToken, APIKey, ContractNumber,'Test1.deleteme.com','www.ptupload.com','Please delete me'))
+
 base.Logout(sessionToken)
