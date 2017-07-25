@@ -1,7 +1,7 @@
 # CDNetworks API Demo script
 
-CDNetworks API Demo python script will help you to automate CDNetworks.
-
+[CDNetworks](http://www.cdnetworks.com) API Demo python script to help you to automate your [CDNetworks](http://www.cdnetworks.com) configuration.
+Demo script is built based on Open API - PAD Configuration v2.0.1
 
 ## Getting Started
 
