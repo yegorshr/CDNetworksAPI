@@ -20,3 +20,7 @@ On Linux:
 ### Prerequisites
 
 This script in compatible with Python3.
+
+## Authors
+
+* **Yegor Shrayev**
