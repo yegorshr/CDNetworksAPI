@@ -10,10 +10,12 @@ from Browser import Browser
 from Base import Base
 from pprint import pprint
 from pprint import PrettyPrinter
+from Actions import Actions
 
 args = Helper.get_args()
 
 base = Base(args)
+actions = Actions(args)
 
 #### LogIn ####
 AutonticationToken = base.Login()
@@ -30,11 +32,11 @@ APIKey = browser.GetAPIKeyForPAD(sessionToken)
 PADsList = browser.GetPADsList(sessionToken, APIKey)
 srcPADName = browser.SelectPAD(PADsList)
 
-# PAD can include referance to additional PADs, in such case one should be selected
-PADDetails = browser.GetPAD(sessionToken, APIKey ,srcPADName)
-PadSAM = browser.GetPADSam(sessionToken, APIKey ,srcPADName)
-
 if args.action == 'Browse':
+
+	# PAD can include referance to additional PADs, in such case one should be selected
+	PADDetails = browser.GetPAD(sessionToken, APIKey ,srcPADName)
+	PadSAM = browser.GetPADSam(sessionToken, APIKey ,srcPADName)
 	# Get PAD details and SAM info, output will be writen to file as it too long to show on screen.
 	logFile = open(srcPADName+'Details.'+base.APIFORMAT, 'w')
 	pp = PrettyPrinter(indent=4, stream=logFile)
@@ -46,14 +48,9 @@ if args.action == 'Browse':
 	pprint("File name for PAD SAM rules is %s" % logFile.name)
 
 if args.action == 'ClonePAD':
-	params = {
-		'sessionToken': sessionToken,
-		'apiKey': APIKey,
-		'output': base.APIFORMAT }
-		
-	ContractList = base.RunRestAPI('pan/contract/list',params)
-	pprint(ContractList['PadConfigResponse']['data']['data'])
-	#ContractNumber = ContractList['PadConfigResponse']['data']['data'][0]['contract_no']
-	#pprint (CreatePAD(sessionToken, APIKey, ContractNumber,'Test1.deleteme.com','www.ptupload.com','Please delete me'))
+	seclectedContract = browser.GetContractNomberForPAD(sessionToken, APIKey)
+	pprint("Selected contract is: %s" % seclectedContract) if args.verbose else None
+	output = actions.ClonePAD(sessionToken, APIKey, seclectedContract, srcPADName, args.destPADName, args.origin, args.description)
+	pprint(output) if args.verbose else None
 
 base.Logout(sessionToken)
