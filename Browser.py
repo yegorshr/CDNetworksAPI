@@ -5,7 +5,7 @@
 """
 
 from Base 	import Base
-from Helper import selectItemByUser
+from Helper import selectItemByUser, SelectedFromList
 
 class Browser(object):
 
@@ -33,36 +33,19 @@ class Browser(object):
 			'output':self.base.APIFORMAT }
 			
 		ApiKeyList = self.base.RunRestAPI('getApiKeyList',params)
+		serviceType = 0#TODO: Add in case will need to select service group. 1 if self.args.action == 'Browse' else 0
+		ListOfDict = [obj for obj in ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"] if(obj['type'] == serviceType)]
+		
+		# ToDo in case need to select service #Dict = self.SelectedFromList(ListOfDict, self.args.srcName, "PAD Name was not found.")
+		Dict = SelectedFromList(ListOfDict, None, "Service Name was not found.")
+		return Dict['apiKey']
 
-		if self.args.srcPADName:
-			count=0
-			for value in ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"]:
-				count+=1
-				if (value['serviceName']==self.args.srcPADName):
-					ChoosenSession = count
-			if not ChoosenSession:
-				raise ValueError ("PAD Name was not found.")
-		else:
-			ChoosenSession = selectItemByUser(ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"])
-
-		return ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"][ChoosenSession-1]['apiKey']
-
-	def GetTokenForSelectedControlGroup(self, AutonticationToken):
+  def GetTokenForSelectedControlGroup(self, AutonticationToken):
 		"""
 			Select a control group and return sessionToken
 		"""
-		if self.args.svcGroupName:
-			count=0
-			for value in AutonticationToken["loginResponse"]["session"]:
-				count+=1
-				if (value['svcGroupName']==self.args.svcGroupName):
-					ChoosenSession = count
-			if not ChoosenSession:
-				raise ValueError ("Group Name was not found.")
-		else:
-			ChoosenSession = selectItemByUser(AutonticationToken["loginResponse"]["session"])
-		
-		return AutonticationToken["loginResponse"]["session"][ChoosenSession-1]["sessionToken"]
+		Dict = SelectedFromList(AutonticationToken["loginResponse"]["session"], self.args.svcGroupName, "Group Name was not found.")
+		return Dict['sessionToken']
 
 	def GetPADsList(self, sessionToken, apiKey):
 
@@ -73,20 +56,10 @@ class Browser(object):
 		return self.base.RunRestAPI('pan/site/list',params)
 
 	def SelectPAD (self,PADsList):
-		if self.args.srcPADName:
-			count=0
-			for value in PADsList["PadConfigResponse"]["data"]["data"]:
-				count+=1
-				if (value['pad']==self.args.srcPADName):
-					ChoosenSession = count
-			if not ChoosenSession:
-				raise ValueError ("Group Name was not found.")
-		else:
-			ChoosenSession = selectItemByUser(PADsList["PadConfigResponse"]["data"]["data"])
-		
-		return PADsList["PadConfigResponse"]["data"]["data"][ChoosenSession-1]["pad"]
+		Dict = SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.")
+		return Dict["pad"]
 
-	def GetPAD(self, sessionToken, apiKey, padName, prod=True):
+  def GetPAD(self, sessionToken, apiKey, padName, prod=True):
 		params = {
 			'sessionToken': sessionToken,
 			'apiKey' : apiKey,
@@ -103,4 +76,13 @@ class Browser(object):
 			'output': self.base.APIFORMAT }
 		return self.base.RunRestAPI('pan/sam/'+ PADName + '/view',params)
 
-
+	def GetContractNomberForPAD(self,sessionToken, apiKey):
+		params = {
+			'sessionToken': sessionToken,
+			'apiKey': apiKey,
+			'output': self.base.APIFORMAT }
+			
+		ContractList = self.base.RunRestAPI('pan/contract/list',params)
+		ChoosenSession = selectItemByUser(ContractList['PadConfigResponse']['data']['data'])
+		ContractNumber = ContractList['PadConfigResponse']['data']['data'][ChoosenSession]['contract_no']
+		return ContractNumber
