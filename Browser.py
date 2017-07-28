@@ -5,37 +5,13 @@
 """
 
 from Base 	import Base
-from Helper import selectItemByUser
+from Helper import selectItemByUser, SelectedFromList
 
 class Browser(object):
 
 	def __init__(self, args):
 		self.args = args
 		self.base = Base(args)
-	
-	def GetDictNumberInList(self, ListOfDict, LookForValue, message):
-		IsFound = False
-		count=-1
-		for dict in ListOfDict:
-			count+=1
-			if (LookForValue in dict.values() ):
-				IsFound = True
-				break
-		if not IsFound:
-			raise ValueError (message)
-		return count
-	
-	def SelectedFromList(self, ListOfDict, LookForValue, message="Value not found" ):
-		"""
-			If Value set, get its dictonaty position.
-			If not set ask user to select of list.
-		"""
-		if LookForValue:
-			ChoosenSession = self.GetDictNumberInList(ListOfDict, LookForValue, message)
-		else:
-			ChoosenSession = selectItemByUser(ListOfDict)
-		
-		return ListOfDict[ChoosenSession]
 
 	def GetAPIKeyForPAD(self,sessionToken):
 		"""
@@ -61,14 +37,14 @@ class Browser(object):
 		ListOfDict = [obj for obj in ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"] if(obj['type'] == serviceType)]
 		
 		# ToDo in case need to select service #Dict = self.SelectedFromList(ListOfDict, self.args.srcName, "PAD Name was not found.")
-		Dict = self.SelectedFromList(ListOfDict, None, "Service Name was not found.")
+		Dict = SelectedFromList(ListOfDict, None, "Service Name was not found.")
 		return Dict['apiKey']
 
 	def GetTokenForSelectedControlGroup(self, AutonticationToken):
 		"""
 			Select a control group and return sessionToken
 		"""
-		Dict = self.SelectedFromList(AutonticationToken["loginResponse"]["session"], self.args.svcGroupName, "Group Name was not found.")
+		Dict = SelectedFromList(AutonticationToken["loginResponse"]["session"], self.args.svcGroupName, "Group Name was not found.")
 		return Dict['sessionToken']
 
 	def GetPADsList(self, sessionToken, apiKey):
@@ -80,7 +56,7 @@ class Browser(object):
 		return self.base.RunRestAPI('pan/site/list',params)
 
 	def SelectPAD (self,PADsList):
-		Dict = self.SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.")
+		Dict = SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.")
 		return Dict["pad"]
 
 	def GetPAD(self, sessionToken, apiKey, padName, prod=True):

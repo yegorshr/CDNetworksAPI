@@ -39,7 +39,7 @@ def get_args():
 	parser.add_argument("-p","--password", 		metavar='PASSWORD', 	dest="Password", 		help="CDNetworks Portal password")
 	parser.add_argument("-g","--svcGroupName", 	metavar='GROUPNAME', 	dest="svcGroupName", 	help="CDNetworks Control Group Name")
 	parser.add_argument("-s","--srcPADName", 	metavar='SRCPAD', 		dest="srcPADName", 		help="PAD from which you clone or copy specific SAM rule")
-	parser.add_argument("-a","--action", 		metavar='ACTION', 		dest="action", 			help="Choise one of follow actions (Browse, ClonePAD, CloneSAM)", choices=['Browse', 'ClonePAD', 'CloneSAM'], default = 'Browse')
+	parser.add_argument("-a","--action", 		metavar='ACTION', 		dest="action", 			help="Choise one of follow actions (Browse, ClonePAD, CloneSAM)", choices=['Browse', 'ClonePAD'], default = 'Browse') #, 'CloneSAM'
 	parser.add_argument("-v","--verbose", 		action="store_false",	dest="verbose", 		help="Disable verbose messages" )
 	group = parser.add_argument_group('Clone PAD / Clone SAM rules arguments')
 	group.add_argument("-d","--destPADName", 	metavar='DESTPAD', 		dest="destPADName", 	help="PAD to where you clone or copy specific SAM rule. Required if ClonePAD or CloneSAM are set")
@@ -84,3 +84,27 @@ def get_args():
 		if not args.destPADName:
 			args.destPADName = input('Please type a name of PAD where you like to copy SAM rule:')
 	return args
+
+def GetDictNumberInList(ListOfDict, LookForValue, message):
+	IsFound = False
+	count=-1
+	for dict in ListOfDict:
+		count+=1
+		if (LookForValue in dict.values() ):
+			IsFound = True
+			break
+	if not IsFound:
+		raise ValueError (message)
+	return count
+
+def SelectedFromList(ListOfDict, LookForValue, message="Value not found" ):
+	"""
+		If Value set, get its dictonaty position.
+		If not set ask user to select of list.
+	"""
+	if LookForValue:
+		ChoosenSession = GetDictNumberInList(ListOfDict, LookForValue, message)
+	else:
+		ChoosenSession = selectItemByUser(ListOfDict)
+	
+	return ListOfDict[ChoosenSession]
