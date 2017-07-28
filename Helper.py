@@ -31,7 +31,6 @@ def selectItemByUser(List):
 	
 	return IsItemSelected-1
 
-
 def get_args():
 	from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 	parser = ArgumentParser(description="Demo script for CDNetworks API", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -45,7 +44,6 @@ def get_args():
 	group.add_argument("-d","--destPADName", 	metavar='DESTPAD', 		dest="destPADName", 	help="PAD to where you clone or copy specific SAM rule. Required if ClonePAD or CloneSAM are set")
 	group.add_argument('--origin', 				metavar='ORIGIN', 		dest="origin",			help="Specify origin in case it is different from sourse", default=None)
 	group.add_argument("--description", 		metavar='DESTPAD', 		dest="description", 	help="New PAD description", default=None)
-
 
 	args = parser.parse_args()
 	if not args.Username:
