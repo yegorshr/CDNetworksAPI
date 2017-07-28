@@ -14,6 +14,7 @@ class Browser(object):
 		self.base = Base(args)
 	
 	def GetDictNumberInList(self, ListOfDict, LookForValue, message):
+		IsFound = False
 		count=-1
 		for dict in ListOfDict:
 			count+=1
@@ -56,8 +57,11 @@ class Browser(object):
 			'output':self.base.APIFORMAT }
 			
 		ApiKeyList = self.base.RunRestAPI('getApiKeyList',params)
+		serviceType = 0#TODO: Add in case will need to select service group. 1 if self.args.action == 'Browse' else 0
+		ListOfDict = [obj for obj in ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"] if(obj['type'] == serviceType)]
 		
-		Dict = self.SelectedFromList(ApiKeyList["apiKeyInfo"]["apiKeyInfoItem"], self.args.srcPADName, "PAD Name was not found.")
+		# ToDo in case need to select service #Dict = self.SelectedFromList(ListOfDict, self.args.srcName, "PAD Name was not found.")
+		Dict = self.SelectedFromList(ListOfDict, None, "Service Name was not found.")
 		return Dict['apiKey']
 
 	def GetTokenForSelectedControlGroup(self, AutonticationToken):

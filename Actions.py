@@ -19,7 +19,7 @@ class Actions(object):
 
 		return self.base.RunRestAPI('pan/site/v2/add',params)
 
-	def ClonePAD (self,base, sessionToken, apiKey, contractNumber, srcPadName, newPADName, origin=None,description=None):
+	def ClonePAD (self,sessionToken, apiKey, contractNumber, srcPadName, newPADName, origin=None,description=None):
 		params = {
 			'sessionToken'	: sessionToken,
 			'apiKey' 		: apiKey,
