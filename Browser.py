@@ -44,7 +44,7 @@ class Browser(object):
 		"""
 			Select a control group and return sessionToken
 		"""
-		Dict = SelectedFromList(AutonticationToken["loginResponse"]["session"], self.args.svcGroupName, "Group Name was not found.")
+		Dict = SelectedFromList(AutonticationToken["loginResponse"]["session"], self.args.svcGroupName, "Group Name was not found.",'svcGroupName','sessionToken')
 		return Dict['sessionToken']
 
 	def GetPADsList(self, sessionToken, apiKey):
@@ -56,7 +56,7 @@ class Browser(object):
 		return self.base.RunRestAPI('pan/site/list',params)
 
 	def SelectPAD (self,PADsList):
-		Dict = SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.")
+		Dict = SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.",'pad')
 		return Dict["pad"]
 
 	def GetPAD(self, sessionToken, apiKey, padName, prod=True):

@@ -31,7 +31,11 @@ class Base(object):
 		Error http code or decoded json output
 		"""
 		fullURL = self.API_URL + APIName
-		response = requests.get(url=fullURL,params=parameters, verify=True)
+
+		if len(json.dumps(parameters)) > 2000:
+			response = requests.post(url=fullURL, data = parameters)
+		else:
+			response = requests.get(url=fullURL,params=parameters, verify=True)
 		print ('Executed url is %s' % (response.url)) 							if self.args.verbose else None
 		print ('Return Code for %s is %s' % (APIName, response.status_code)) 	if self.args.verbose else None
 		
@@ -52,7 +56,6 @@ class Base(object):
 		output = self.RunRestAPI('login',params)
 		if output['loginResponse']['resultCode'] == 101:
 			raise ValueError("User login information is incorrect")
-		pprint (output) if self.args.verbose else None
 		return output
 
 	def Logout(self,sessionToken):

@@ -32,3 +32,11 @@ class Actions(object):
 		if description:
 			params['description'] = description,
 		return self.base.RunRestAPI('pan/site/v2/add',params)
+
+	def AddSamToPAD(self, sessionToken, apiKey, destPADName, rule):
+		params = {
+			'sessionToken': sessionToken,
+			'apiKey' : apiKey,
+			'sam_json' : rule,
+			'output': self.base.APIFORMAT }
+		return self.base.RunRestAPI('pan/sam/'+ destPADName + '/add',params)
