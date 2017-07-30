@@ -40,7 +40,7 @@ class Browser(object):
 		Dict = SelectedFromList(ListOfDict, None, "Service Name was not found.")
 		return Dict['apiKey']
 
-	def GetTokenForSelectedControlGroup(self, AutonticationToken):
+  def GetTokenForSelectedControlGroup(self, AutonticationToken):
 		"""
 			Select a control group and return sessionToken
 		"""
@@ -59,7 +59,7 @@ class Browser(object):
 		Dict = SelectedFromList(PADsList["PadConfigResponse"]["data"]["data"], self.args.srcPADName, "PAD Name was not found.",'pad')
 		return Dict["pad"]
 
-	def GetPAD(self, sessionToken, apiKey, padName, prod=True):
+  def GetPAD(self, sessionToken, apiKey, padName, prod=True):
 		params = {
 			'sessionToken': sessionToken,
 			'apiKey' : apiKey,
