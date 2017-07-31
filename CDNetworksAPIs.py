@@ -6,6 +6,7 @@
 """
 
 import Helper
+import json
 from Browser import Browser
 from Base import Base
 from pprint import pprint
@@ -26,17 +27,20 @@ browser = Browser(args)
 sessionToken = browser.GetTokenForSelectedControlGroup(AutonticationToken)
 
 # Select a PAD or service type and return API for it.
-APIKey = browser.GetAPIKeyForPAD(sessionToken)
+apiKey = browser.GetAPIKeyForPAD(sessionToken)
 
 # PAD can include referance to additional PADs, in such case one should be selected
-PADsList = browser.GetPADsList(sessionToken, APIKey)
+PADsList = browser.GetPADsList(sessionToken, apiKey)
+
 srcPADName = browser.SelectPAD(PADsList)
 
-if args.action == 'Browse':
+if args.action == 'Browse' or args.action == 'CloneSAM':
 
 	# PAD can include referance to additional PADs, in such case one should be selected
-	PADDetails = browser.GetPAD(sessionToken, APIKey ,srcPADName)
-	PadSAM = browser.GetPADSam(sessionToken, APIKey ,srcPADName)
+	PADDetails = browser.GetPAD(sessionToken, apiKey ,srcPADName)
+	PadSAM = browser.GetPADSam(sessionToken, apiKey ,srcPADName)
+
+if args.action == 'Browse':
 	# Get PAD details and SAM info, output will be writen to file as it too long to show on screen.
 	logFile = open(srcPADName+'Details.'+base.APIFORMAT, 'w')
 	pp = PrettyPrinter(indent=4, stream=logFile)
@@ -48,9 +52,30 @@ if args.action == 'Browse':
 	pprint("File name for PAD SAM rules is %s" % logFile.name)
 
 if args.action == 'ClonePAD':
-	seclectedContract = browser.GetContractNomberForPAD(sessionToken, APIKey)
+	#To create new PAD Contact number is required
+	seclectedContract = browser.GetContractNomberForPAD(sessionToken, apiKey)
 	pprint("Selected contract is: %s" % seclectedContract) if args.verbose else None
-	output = actions.ClonePAD(sessionToken, APIKey, seclectedContract, srcPADName, args.destPADName, args.origin, args.description)
+	output = actions.ClonePAD(sessionToken, apiKey, seclectedContract, srcPADName, args.destPADName, args.origin, args.description)
+	pprint(output) if args.verbose else None
+
+if args.action == 'CloneSAM':
+	SAMRules = PadSAM['PadConfigResponse']['data']['data']['details']
+	#Select Rule to clone
+	ruleNum = Helper.selectItemByUser(SAMRules, False, 'name')
+	#Select destanation PAD
+	if not args.destPADName:
+		args.destPADName = browser.SelectPAD(PADsList)
+	# Will add CLONED tag incase source and destanation are the same PAD
+	if args.destPADName == srcPADName:
+		SAMRules[ruleNum]['name'] = 'CLONED ' + SAMRules[ruleNum]['name']
+	# Select posision for new rule in destanation PAD and insert it
+	DestPadSAM = browser.GetPADSam(sessionToken, apiKey ,args.destPADName)
+	DestPadSAMRules = DestPadSAM['PadConfigResponse']['data']['data']['details']
+	AfterRuleNum = Helper.selectItemByUser(DestPadSAMRules, False, 'name')
+	DestPadSAMRules.insert(AfterRuleNum,SAMRules[ruleNum])
+	#Dump json and run API
+	params_json = json.dumps(DestPadSAMRules)
+	output = actions.AddSamToPAD( sessionToken, apiKey, args.destPADName,params_json )
 	pprint(output) if args.verbose else None
 
 base.Logout(sessionToken)

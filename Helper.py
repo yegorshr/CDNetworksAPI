@@ -8,7 +8,7 @@ import getpass
 from pprint import pprint
 
 
-def selectItemByUser(List):
+def selectItemByUser(List, showKeys=True, *fieldsToShow):
 
 	NumberOfItems = len(List)
 	IsItemSelected = 0
@@ -17,7 +17,17 @@ def selectItemByUser(List):
 	if NumberOfItems == 1:
 		IsItemSelected = 1
 	if NumberOfItems > 1:
-		pprint(List)
+		for idx, dict in enumerate(List):
+			string = ''
+			if fieldsToShow:
+				for field in fieldsToShow:
+					if field in dict:
+						string += str(field) + ' : ' if showKeys else ''
+						string += dict[field] + ', '
+				string = string[:-1]
+			else:
+				string = dict
+			print (idx+1,')', string)
 
 		while True:
 			try:
@@ -38,7 +48,7 @@ def get_args():
 	parser.add_argument("-p","--password", 		metavar='PASSWORD', 	dest="Password", 		help="CDNetworks Portal password")
 	parser.add_argument("-g","--svcGroupName", 	metavar='GROUPNAME', 	dest="svcGroupName", 	help="CDNetworks Control Group Name")
 	parser.add_argument("-s","--srcPADName", 	metavar='SRCPAD', 		dest="srcPADName", 		help="PAD from which you clone or copy specific SAM rule")
-	parser.add_argument("-a","--action", 		metavar='ACTION', 		dest="action", 			help="Choise one of follow actions (Browse, ClonePAD, CloneSAM)", choices=['Browse', 'ClonePAD'], default = 'Browse') #, 'CloneSAM'
+	parser.add_argument("-a","--action", 		metavar='ACTION', 		dest="action", 			help="Choise one of follow actions (Browse, ClonePAD, CloneSAM)", choices=['Browse', 'ClonePAD', 'CloneSAM'], default = 'Browse')
 	parser.add_argument("-v","--verbose", 		action="store_false",	dest="verbose", 		help="Disable verbose messages" )
 	group = parser.add_argument_group('Clone PAD / Clone SAM rules arguments')
 	group.add_argument("-d","--destPADName", 	metavar='DESTPAD', 		dest="destPADName", 	help="PAD to where you clone or copy specific SAM rule. Required if ClonePAD or CloneSAM are set")
@@ -78,9 +88,6 @@ def get_args():
 		if not args.description and params.description != '#DONTASKUSER#':
 			args.description = input('Please enter description for new PAD:')
 
-	if args.action == 'CloneSAM':
-		if not args.destPADName:
-			args.destPADName = input('Please type a name of PAD where you like to copy SAM rule:')
 	return args
 
 def GetDictNumberInList(ListOfDict, LookForValue, message):
@@ -95,7 +102,7 @@ def GetDictNumberInList(ListOfDict, LookForValue, message):
 		raise ValueError (message)
 	return count
 
-def SelectedFromList(ListOfDict, LookForValue, message="Value not found" ):
+def SelectedFromList(ListOfDict, LookForValue, message="Value not found", *fieldsToShow ):
 	"""
 		If Value set, get its dictonaty position.
 		If not set ask user to select of list.
@@ -103,6 +110,6 @@ def SelectedFromList(ListOfDict, LookForValue, message="Value not found" ):
 	if LookForValue:
 		ChoosenSession = GetDictNumberInList(ListOfDict, LookForValue, message)
 	else:
-		ChoosenSession = selectItemByUser(ListOfDict)
+		ChoosenSession = selectItemByUser(ListOfDict, True, *fieldsToShow)
 	
 	return ListOfDict[ChoosenSession]
