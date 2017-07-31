@@ -62,10 +62,12 @@ if args.action == 'CloneSAM':
 	SAMRules = PadSAM['PadConfigResponse']['data']['data']['details']
 	#Select Rule to clone
 	ruleNum = Helper.selectItemByUser(SAMRules, False, 'name')
-	SAMRules[ruleNum]['name'] = 'CLONED ' + SAMRules[ruleNum]['name']
 	#Select destanation PAD
 	if not args.destPADName:
 		args.destPADName = browser.SelectPAD(PADsList)
+	# Will add CLONED tag incase source and destanation are the same PAD
+	if args.destPADName == srcPADName:
+		SAMRules[ruleNum]['name'] = 'CLONED ' + SAMRules[ruleNum]['name']
 	# Select posision for new rule in destanation PAD and insert it
 	DestPadSAM = browser.GetPADSam(sessionToken, apiKey ,args.destPADName)
 	DestPadSAMRules = DestPadSAM['PadConfigResponse']['data']['data']['details']
