@@ -6,10 +6,13 @@
 import params
 import getpass
 from pprint import pprint
+import logging
+import base64
+from datetime import datetime, timezone
+import hashlib, hmac
 
 
 def selectItemByUser(List, showKeys=True, *fieldsToShow):
-
 	NumberOfItems = len(List)
 	IsItemSelected = 0
 	if NumberOfItems == 0:
@@ -41,6 +44,12 @@ def selectItemByUser(List, showKeys=True, *fieldsToShow):
 	
 	return IsItemSelected-1
 
+def get_logging_setting(verbose):
+	levels = [logging.WARNING, logging.INFO, logging.DEBUG]
+	LoggingLevel = levels[min(len(levels)-1,verbose)]  # capped to number of levels
+	LoggingFormat = "[%(asctime)s][%(levelname)-7s] %(message)s"
+	return LoggingLevel, LoggingFormat
+
 def get_args():
 	from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 	parser = ArgumentParser(description="Demo script for CDNetworks API", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -49,13 +58,22 @@ def get_args():
 	parser.add_argument("-g","--svcGroupName", 	metavar='GROUPNAME', 	dest="svcGroupName", 	help="CDNetworks Control Group Name")
 	parser.add_argument("-s","--srcPADName", 	metavar='SRCPAD', 		dest="srcPADName", 		help="PAD from which you clone or copy specific SAM rule")
 	parser.add_argument("-a","--action", 		metavar='ACTION', 		dest="action", 			help="Choise one of follow actions (Browse, ClonePAD, CloneSAM)", choices=['Browse', 'ClonePAD', 'CloneSAM'], default = 'Browse')
-	parser.add_argument("-v","--verbose", 		action="store_false",	dest="verbose", 		help="Disable verbose messages" )
+	parser.add_argument('-v',"--verbose", 		action='count', 		dest="verbose",			help="Verbose messages level", default=0)
 	group = parser.add_argument_group('Clone PAD / Clone SAM rules arguments')
 	group.add_argument("-d","--destPADName", 	metavar='DESTPAD', 		dest="destPADName", 	help="PAD to where you clone or copy specific SAM rule. Required if ClonePAD or CloneSAM are set")
 	group.add_argument('--origin', 				metavar='ORIGIN', 		dest="origin",			help="Specify origin in case it is different from sourse", default=None)
 	group.add_argument("--description", 		metavar='DESTPAD', 		dest="description", 	help="New PAD description", default=None)
 
 	args = parser.parse_args()
+
+	LoggingLevel, LoggingFormat = get_logging_setting(args.verbose)
+	logging.basicConfig(level=LoggingLevel,
+						format=LoggingFormat)
+
+	logging.debug("a debug verbose mode")
+	if logging.getLogger().getEffectiveLevel() == logging.INFO		: logging.info("a info verbose mode") 
+
+
 	if not args.Username:
 		if not params.Username:
 			args.Username = input('Username:')
@@ -111,5 +129,9 @@ def SelectedFromList(ListOfDict, LookForValue, message="Value not found", *field
 		ChoosenSession = GetDictNumberInList(ListOfDict, LookForValue, message)
 	else:
 		ChoosenSession = selectItemByUser(ListOfDict, True, *fieldsToShow)
-	
 	return ListOfDict[ChoosenSession]
+
+def hmac_sha1(raw, key):
+	hashed = hmac.new(key, raw, hashlib.sha1).digest()
+	return base64.b64encode(hashed)
+

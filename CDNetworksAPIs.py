@@ -9,9 +9,9 @@ import Helper
 import json
 from Browser import Browser
 from Base import Base
-from pprint import pprint
-from pprint import PrettyPrinter
+import pprint as pp
 from Actions import Actions
+import logging
 
 args = Helper.get_args()
 
@@ -43,20 +43,21 @@ if args.action == 'Browse' or args.action == 'CloneSAM':
 if args.action == 'Browse':
 	# Get PAD details and SAM info, output will be writen to file as it too long to show on screen.
 	logFile = open(srcPADName+'Details.'+base.APIFORMAT, 'w')
-	pp = PrettyPrinter(indent=4, stream=logFile)
-	pp.pprint(PADDetails)
-	pprint("File name for PAD details is %s" % logFile.name)
+	ppFormat = pp.PrettyPrinter(indent=4, stream=logFile)
+	logging.debug("PAD configuration:\n" + pp.pformat(PADDetails, indent=4))
+	ppFormat.pprint(PADDetails)
+	pp.pprint("File name for PAD details is %s" % logFile.name)
 	logFile = open(srcPADName+'SAMRules.'+base.APIFORMAT, 'w')
-	pp = PrettyPrinter(indent=4, stream=logFile)
-	pp.pprint(PadSAM)
-	pprint("File name for PAD SAM rules is %s" % logFile.name)
+	ppFormat = pp.PrettyPrinter(indent=4, stream=logFile)
+	logging.debug("PAD SAM rules:\n" + pp.pformat(PadSAM, indent=4))
+	ppFormat.pprint(PadSAM)
+	pp.pprint("File name for PAD SAM rules is %s" % logFile.name)
 
 if args.action == 'ClonePAD':
 	#To create new PAD Contact number is required
 	seclectedContract = browser.GetContractNomberForPAD(sessionToken, apiKey)
-	pprint("Selected contract is: %s" % seclectedContract) if args.verbose else None
+	logging.info("PAD SAM rules:\n" + pp.pformat(seclectedContract, indent=4))
 	output = actions.ClonePAD(sessionToken, apiKey, seclectedContract, srcPADName, args.destPADName, args.origin, args.description)
-	pprint(output) if args.verbose else None
 
 if args.action == 'CloneSAM':
 	SAMRules = PadSAM['PadConfigResponse']['data']['data']['details']
@@ -76,6 +77,5 @@ if args.action == 'CloneSAM':
 	#Dump json and run API
 	params_json = json.dumps(DestPadSAMRules)
 	output = actions.AddSamToPAD( sessionToken, apiKey, args.destPADName,params_json )
-	pprint(output) if args.verbose else None
 
 base.Logout(sessionToken)

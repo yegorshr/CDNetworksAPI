@@ -5,9 +5,9 @@
 """
 import requests
 import json
-from pprint import pprint
 from pprint import PrettyPrinter
-
+import pprint as pp
+import logging
 class Base(object):
 
 	def __init__(self, args):
@@ -36,13 +36,12 @@ class Base(object):
 			response = requests.post(url=fullURL, data = parameters)
 		else:
 			response = requests.get(url=fullURL,params=parameters, verify=True)
-		print ('Executed url is %s' % (response.url)) 							if self.args.verbose else None
-		print ('Return Code for %s is %s' % (APIName, response.status_code)) 	if self.args.verbose else None
 		
 		# On success, response code will be 200
 		if(response.ok):
 			# Loading the response data and decode as response not in utf-8 and has digits
 			output = json.loads(response.content.decode('utf-8'))
+			logging.debug("[RunRestAPI] " + "Request output:\n" + pp.pformat(output, indent=4))
 			return output
 		else:
 			# If response code is not ok (200), print the resulting error
@@ -63,4 +62,3 @@ class Base(object):
 			'sessionToken':sessionToken,
 			'output': self.APIFORMAT }
 		output = self.RunRestAPI('logout',params)
-		pprint(output) if self.args.verbose else None
