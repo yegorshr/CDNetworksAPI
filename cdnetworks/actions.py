@@ -28,6 +28,22 @@ class Actions(object):
             params['description'] = description
         return self.base.execute('pan/site/v2/add', params)
 
+    def add_alias_to_pad(self, pad, pad_name, domain):
+        existing_aliases = pad['PadConfigResponse']['data']['data']['pad_aliases'].split("\n")
+        existing_aliases.append(domain)
+        existing_aliases = list(set(existing_aliases))
+        params = {
+            'sessionToken': self.session_token,
+            'apiKey': self.api_key,
+            'pad': pad_name,
+            'pad_aliases': "\n".join(existing_aliases),
+            'output': self.base.APIFORMAT
+        }
+        response = self.base.execute('pan/site/v2/edit', params)
+        if response['PadConfigResponse']['resultCode'] == 200:
+            pad['PadConfigResponse']['data']['data']['pad_aliases'] = "\n".join(existing_aliases)
+        return pad
+
     def add_sam_to_pad(self, dest_pad_name, rule):
         params = {
             'sessionToken': self.session_token,
