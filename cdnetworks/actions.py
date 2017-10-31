@@ -42,6 +42,8 @@ class Actions(object):
         response = self.base.execute('pan/site/v2/edit', params)
         if response['PadConfigResponse']['resultCode'] == 200:
             pad['PadConfigResponse']['data']['data']['pad_aliases'] = "\n".join(existing_aliases)
+        else:
+            raise ValueError(response['PadConfigResponse']['data']['errors']['general'])
         return pad
 
     def add_sam_to_pad(self, dest_pad_name, rule):
