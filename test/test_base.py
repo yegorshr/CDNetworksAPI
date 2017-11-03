@@ -16,33 +16,35 @@ class TestBase(unittest.TestCase):
             'svc_group_name': 'testGroupName',
             'svc_name': 'testServiceName'
         }
+        self.request_mock = patch('cdnetworks.base.requests').start()
 
-    @patch('cdnetworks.base.requests')
-    def test_login_success_called_with_proper_data(self, request_mock: Mock):
-        self.__setup_login(self.RESPONSE_LOGIN_SUCCESSFUL, request_mock)
+    def tearDown(self):
+        super().tearDown()
+        patch.stopall()
 
-        request_mock.post.assert_called_once_with(
+    def test_login_success_called_with_proper_data(self):
+        self.__setup_login(self.RESPONSE_LOGIN_SUCCESSFUL)
+
+        self.request_mock.post.assert_called_once_with(
             data={'output': 'json', 'pass': 'testPassword', 'user': 'testUsername'},
             url='https://openapi.cdnetworks.com/api/rest/login')
 
-    @patch('cdnetworks.base.requests')
-    def test_login_success_returns_valid_response(self, request_mock: Mock):
-        actual = self.__setup_login(self.RESPONSE_LOGIN_SUCCESSFUL, request_mock)
+    def test_login_success_returns_valid_response(self):
+        actual = self.__setup_login(self.RESPONSE_LOGIN_SUCCESSFUL)
 
         self.assertEqual(actual, self.RESPONSE_LOGIN_SUCCESSFUL)
 
-    @patch('cdnetworks.base.requests')
-    def test_login_failed_raises_exception(self, request_mock):
+    def test_login_failed_raises_exception(self):
         try:
-            self.__setup_login(self.RESPONSE_LOGIN_FAILED, request_mock)
+            self.__setup_login(self.RESPONSE_LOGIN_FAILED)
             self.fail('should throw')
         except Exception as ve:
             self.assertIsInstance(ve, ValueError)
             self.assertEqual(str(ve), 'User login information is incorrect')
 
-    def __setup_login(self, expected_data, request_mock):
+    def __setup_login(self, expected_data):
         fake_response = json.dumps(expected_data).encode('utf-8')
-        request_mock.post.return_value = Mock(ok=True, content=fake_response)
+        self.request_mock.post.return_value = Mock(ok=True, content=fake_response)
         args_mock = Mock(**self.args)
         subject = Base(args_mock)
         actual = subject.login()
