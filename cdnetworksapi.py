@@ -78,24 +78,24 @@ def get_args():
 
 args = get_args()
 
-base = Base(args)
+base = Base(args.username, args.password, args.verbose)
 
 auth_token = base.login()
 
-browser = Browser(args)
+browser = Browser(base)
 
 # Select a control group and return sessionToken
-sessionToken = browser.get_token_for_control_group(auth_token)
+sessionToken = browser.get_token_for_control_group(auth_token, args.svc_group_name)
 
 # Select a PAD or service type and return API for it.
-apiKey = browser.get_api_key_for_pad(sessionToken)
+apiKey = browser.get_api_key_for_service(sessionToken, args.svc_name)
 
-actions = Actions(args, sessionToken, apiKey)
+actions = Actions(base, sessionToken, apiKey)
 
 # PAD can include referance to additional PADs, in such case one should be selected
 PADsList = browser.get_pad_list(sessionToken, apiKey)
 
-srcPADName = browser.select_pad(PADsList)
+srcPADName = browser.select_pad(PADsList, args.src_pad_name)
 
 if args.action == 'Browse' or args.action == 'CloneSAM':
     PADDetails = browser.get_pad(sessionToken, apiKey, srcPADName)
@@ -125,7 +125,7 @@ if args.action == 'CloneSAM':
     ruleNum = select_item_by_user(SAMRules, False, 'name')
     # Select destanation PAD
     if not args.destPADName:
-        args.destPADName = browser.select_pad(PADsList)
+        args.destPADName = browser.select_pad(PADsList, args.dest_pad_name)
     # Will add CLONED tag incase source and destanation are the same PAD
     if args.destPADName == srcPADName:
         SAMRules[ruleNum]['name'] = 'CLONED ' + SAMRules[ruleNum]['name']

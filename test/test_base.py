@@ -10,9 +10,7 @@ class TestBase(unittest.TestCase):
 
     def setUp(self):
         self.request_mock = patch('cdnetworks.base.requests').start()
-        args_mock = Mock(username='testUsername', password='testPassword', verbose=False,
-                         svc_group_name='testGroupName', svc_name='testServiceName')
-        self.subject = Base(args_mock)
+        self.subject = Base(username='testUsername', password='testPassword', verbose=False)
 
     def tearDown(self):
         super().tearDown()

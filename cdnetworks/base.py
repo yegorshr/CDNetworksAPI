@@ -4,11 +4,13 @@ from pprint import pprint
 
 
 class Base(object):
-    def __init__(self, args):
-        self.args = args
-
     API_URL = "https://openapi.cdnetworks.com/api/rest/"  # CDNetworks API url
     APIFORMAT = "json"  # API output format
+
+    def __init__(self, username, password, verbose=False):
+        self.username = username
+        self.password = password
+        self.verbose = verbose
 
     def execute(self, endpoint, method, parameters):
         """
@@ -16,7 +18,8 @@ class Base(object):
 
         Parameters
         ----------
-        endpoint     : API name Example "login" or "pan/contract/list"
+        endpoint    : API name Example "login" or "pan/contract/list"
+        method      : HTTP method : GET or POST
         parameters  : dictionary of paramenter for API
 
         Returns
@@ -29,8 +32,8 @@ class Base(object):
             response = requests.post(url=full_url, data=parameters)
         else:
             response = requests.get(url=full_url, params=parameters, verify=True)
-        print('Executed url is %s' % response.url) if self.args.verbose else None
-        print('Return Code for %s is %s' % (endpoint, response.status_code)) if self.args.verbose else None
+        print('Executed url is %s' % response.url) if self.verbose else None
+        print('Return Code for %s is %s' % (endpoint, response.status_code)) if self.verbose else None
 
         # On success, response code will be 200
         if response.ok:
@@ -43,8 +46,8 @@ class Base(object):
 
     def login(self):
         params = {
-            'user': self.args.username,
-            'pass': self.args.password,
+            'user': self.username,
+            'pass': self.password,
             'output': self.APIFORMAT}
         output = self.execute('login', "POST", params)
         if output['loginResponse']['resultCode'] == 101:
@@ -56,4 +59,4 @@ class Base(object):
             'sessionToken': token,
             'output': self.APIFORMAT}
         output = self.execute('logout', "GET", params)
-        pprint(output) if self.args.verbose else None
+        pprint(output) if self.verbose else None
