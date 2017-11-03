@@ -1,7 +1,7 @@
 import unittest
-import json
-from cdnetworks.base import Base
 from unittest.mock import patch, Mock
+from cdnetworks.base import Base
+from . import encode_response
 
 
 class TestBase(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestBase(unittest.TestCase):
             self.assertEqual(str(ve), 'User login information is incorrect')
 
     def test_logout(self):
-        self.request_mock.get.return_value = Mock(ok=True, content=self.__encode_response({}))
+        self.request_mock.get.return_value = Mock(ok=True, content=encode_response({}))
 
         self.subject.logout('testToken')
 
@@ -45,13 +45,10 @@ class TestBase(unittest.TestCase):
                                                       url='https://openapi.cdnetworks.com/api/rest/logout', verify=True)
 
     def __setup_login(self, response_content):
-        fake_response = self.__encode_response(response_content)
+        fake_response = encode_response(response_content)
         self.request_mock.post.return_value = Mock(ok=True, content=fake_response)
         actual = self.subject.login()
         return actual
-
-    def __encode_response(self, expected_data):
-        return json.dumps(expected_data).encode('utf-8')
 
 
 if __name__ == '__main__':
