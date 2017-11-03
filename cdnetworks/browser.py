@@ -27,7 +27,7 @@ class Browser(object):
             'output': self.base.APIFORMAT
         }
 
-        api_key_list = self.base.execute('getApiKeyList', params)
+        api_key_list = self.base.execute('getApiKeyList', "GET", params)
         service_type = 0
         services = [obj for obj in api_key_list["apiKeyInfo"]["apiKeyInfoItem"] if (obj['type'] == service_type)]
 
@@ -47,7 +47,7 @@ class Browser(object):
             'sessionToken': token,
             'apiKey': api_key,
             'output': self.base.APIFORMAT}
-        return self.base.execute('pan/site/list', params)
+        return self.base.execute('pan/site/list', "GET", params)
 
     def select_pad(self, pads):
         selected_pad = select_from_list(pads["PadConfigResponse"]["data"]["data"], self.args.src_pad_name,
@@ -61,7 +61,7 @@ class Browser(object):
             'pad': pad_name,
             'prod': prod,
             'output': self.base.APIFORMAT}
-        return self.base.execute('pan/site/view', params)
+        return self.base.execute('pan/site/view', "GET", params)
 
     def get_sam(self, token, api_key, pad_name):
         params = {
@@ -69,7 +69,7 @@ class Browser(object):
             'apiKey': api_key,
             'output': self.base.APIFORMAT
         }
-        return self.base.execute('pan/sam/' + pad_name + '/view', params)
+        return self.base.execute('pan/sam/' + pad_name + '/view', "GET", params)
 
     def get_contract_number(self, token, api_key):
         params = {
@@ -78,7 +78,7 @@ class Browser(object):
             'output': self.base.APIFORMAT
         }
 
-        contract_list = self.base.execute('pan/contract/list', params)
+        contract_list = self.base.execute('pan/contract/list', "GET", params)
         choosen_session = select_item_by_user(contract_list['PadConfigResponse']['data']['data'])
         contract_number = contract_list['PadConfigResponse']['data']['data'][choosen_session]['contract_no']
         return contract_number

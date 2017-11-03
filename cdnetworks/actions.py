@@ -26,7 +26,7 @@ class Actions(object):
             params['origin'] = origin
         if description:
             params['description'] = description
-        return self.base.execute('pan/site/v2/add', params)
+        return self.base.execute('pan/site/v2/add', "POST", params)
 
     def add_alias_to_pad(self, pad, pad_name, domain):
         existing_aliases = pad['PadConfigResponse']['data']['data']['pad_aliases'].split("\n")
@@ -39,7 +39,7 @@ class Actions(object):
             'pad_aliases': "\n".join(existing_aliases),
             'output': self.base.APIFORMAT
         }
-        response = self.base.execute('pan/site/v2/edit', params)
+        response = self.base.execute('pan/site/v2/edit',"POST", params)
         if response['PadConfigResponse']['resultCode'] == 200:
             pad['PadConfigResponse']['data']['data']['pad_aliases'] = "\n".join(existing_aliases)
         else:
@@ -52,4 +52,4 @@ class Actions(object):
             'apiKey': self.api_key,
             'sam_json': rule,
             'output': self.base.APIFORMAT}
-        return self.base.execute('pan/sam/' + dest_pad_name + '/add', params)
+        return self.base.execute('pan/sam/' + dest_pad_name + '/add', "POST", params)

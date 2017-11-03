@@ -10,7 +10,7 @@ class Base(object):
     API_URL = "https://openapi.cdnetworks.com/api/rest/"  # CDNetworks API url
     APIFORMAT = "json"  # API output format
 
-    def execute(self, endpoint, parameters):
+    def execute(self, endpoint, method, parameters):
         """
         Execute Rest API
 
@@ -25,7 +25,7 @@ class Base(object):
         """
         full_url = self.API_URL + endpoint
 
-        if len(json.dumps(parameters)) > 2000:
+        if method == "POST":
             response = requests.post(url=full_url, data=parameters)
         else:
             response = requests.get(url=full_url, params=parameters, verify=True)
@@ -46,7 +46,7 @@ class Base(object):
             'user': self.args.username,
             'pass': self.args.password,
             'output': self.APIFORMAT}
-        output = self.execute('login', params)
+        output = self.execute('login', "POST", params)
         if output['loginResponse']['resultCode'] == 101:
             raise ValueError("User login information is incorrect")
         return output
@@ -55,5 +55,5 @@ class Base(object):
         params = {
             'sessionToken': token,
             'output': self.APIFORMAT}
-        output = self.execute('logout', params)
+        output = self.execute('logout', "GET", params)
         pprint(output) if self.args.verbose else None
