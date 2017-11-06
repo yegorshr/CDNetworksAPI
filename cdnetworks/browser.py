@@ -61,7 +61,10 @@ class Browser(object):
             'pad': pad_name,
             'prod': prod,
             'output': self.api_base.APIFORMAT}
-        return self.api_base.execute('pan/site/view', "GET", params)
+        result = self.api_base.execute('pan/site/view', "GET", params)
+        if result['PadConfigResponse']["data"]["errors"] != "":
+            raise ValueError(result['PadConfigResponse']["data"]["errors"])
+        return result
 
     def get_sam(self, token, api_key, pad_name):
         params = {
