@@ -36,6 +36,17 @@ class TestBase(unittest.TestCase):
             self.assertIsInstance(ve, ValueError)
             self.assertEqual(str(ve), 'User login information is incorrect')
 
+    def test_login_api_failure_raises_exception(self):
+        fake_response = encode_response(self.RESPONSE_LOGIN_FAILED)
+        self.request_mock.post.return_value = Mock(ok=False, content=fake_response)
+        self.request_mock.post.return_value.raise_for_status.side_effect = RuntimeError('TestError')
+        try:
+            self.subject.login()
+            self.fail('should throw')
+        except Exception as ve:
+            self.assertIsInstance(ve, RuntimeError)
+            self.assertEqual(str(ve), 'TestError')
+
     def test_logout(self):
         self.request_mock.get.return_value = Mock(ok=True, content=encode_response({}))
 
@@ -49,7 +60,3 @@ class TestBase(unittest.TestCase):
         self.request_mock.post.return_value = Mock(ok=True, content=fake_response)
         actual = self.subject.login()
         return actual
-
-
-if __name__ == '__main__':
-    unittest.main()
