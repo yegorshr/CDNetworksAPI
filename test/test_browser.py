@@ -1,7 +1,6 @@
 import unittest
-import json
 from cdnetworks import Base, Browser
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, call
 from test import encode_response
 
 GET_API_KEY_RESPONSE = {
