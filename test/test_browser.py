@@ -296,7 +296,12 @@ class TestBrowser(unittest.TestCase):
     def test_get_sam_returns_existing_sam(self):
         self.request_mock.get.return_value = Mock(ok=True, content=encode_response(RESPONSE_SAM_OK))
 
-        self.subject.get_sam('session_token', 'test_key', 'pad_name')
+        result = self.subject.get_sam('session_token', 'test_key', 'pad_name')
+
+        self.request_mock.get.assert_called_once_with(
+            params={'output': 'json', 'apiKey': 'test_key', 'sessionToken': 'session_token'},
+            url='https://openapi.cdnetworks.com/api/rest/pan/sam/pad_name/view', verify=True)
+        self.assertEqual(result, RESPONSE_SAM_OK)
 
     def test_get_sam_raises_error_for_nonexistent_pad(self):
         self.request_mock.get.return_value = Mock(ok=True, content=encode_response(RESPONSE_SAM_FAILED))
