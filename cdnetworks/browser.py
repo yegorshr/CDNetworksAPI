@@ -62,8 +62,9 @@ class Browser(object):
             'prod': prod,
             'output': self.api_base.APIFORMAT}
         result = self.api_base.execute('pan/site/view', "GET", params)
-        if result['PadConfigResponse']["data"]["errors"] != "":
-            raise ValueError(result['PadConfigResponse']["data"]["errors"])
+        error_message = result["PadConfigResponse"]["data"]["errors"]
+        if error_message:
+            raise ValueError(error_message)
         return result
 
     def get_sam(self, token, api_key, pad_name):
@@ -72,7 +73,12 @@ class Browser(object):
             'apiKey': api_key,
             'output': self.api_base.APIFORMAT
         }
-        return self.api_base.execute('pan/sam/' + pad_name + '/view', "GET", params)
+
+        result = self.api_base.execute('pan/sam/' + pad_name + '/view', "GET", params)
+        error_message = result["PadConfigResponse"]["data"]["errors"]
+        if error_message:
+            raise ValueError(error_message)
+        return result
 
     def get_contract_number(self, token, api_key):
         params = {
