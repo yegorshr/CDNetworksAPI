@@ -4,11 +4,7 @@ class Actions(object):
         self.session_token = session_token
         self.api_key = api_key
 
-    def create_pad(self, contract_number, new_pad_name, origin, description=None):
-        self.clone_pad(contract_number, new_pad_name, origin, description)
-
-    def clone_pad(self, contract_number, src_pad_name=None, new_pad_name='www.newPADName.com',
-                  origin=None, description=None):
+    def clone_pad(self, contract_number, src_pad_name, new_pad_name, origin, description=None):
         params = {
             'sessionToken': self.session_token,
             'apiKey': self.api_key,

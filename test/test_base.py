@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 from cdnetworks.base import Base
-from . import encode_response
+from test.helper_functions import encode_response
 
 
 class TestBase(unittest.TestCase):
