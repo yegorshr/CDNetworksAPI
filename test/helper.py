@@ -175,3 +175,8 @@ CONTRACT_RESPONSE_ERROR = {'PadConfigResponse':
                               {'errors': 'error'}
                           }
                      }
+
+ADD_PAD_ALIAS_FAILED_RESPONSE = {
+    'PadConfigResponse': {
+        'resultCode': 400,
+        'data': {'errors': {'general': 'error adding alias.', 'data': {}}}}}
