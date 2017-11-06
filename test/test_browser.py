@@ -34,6 +34,13 @@ AUTH_TOKEN = {'loginResponse': {
         }],
     'resultCode': 0}}
 
+PADS = {"PadConfigResponse": {
+            "data": {
+                "data":
+                [{'origin': 'origin1.fqdn.com', 'pad': 'pad1.cdnet.com', 'id': 1},
+                 {'origin': 'origin2.fqdn.com', 'pad': 'origin2.cdnet.com', 'id': 2}]
+                }}}
+
 
 class TestBrowser(unittest.TestCase):
     def setUp(self):
@@ -97,3 +104,28 @@ class TestBrowser(unittest.TestCase):
         self.request_mock.get.assert_called_once_with(
             params={'sessionToken': 'testToken', 'apiKey': 'testApiKey', 'output': 'json'},
             url='https://openapi.cdnetworks.com/api/rest/pan/site/list', verify=True)
+
+    def test_get_pad_list_calls_proper_endpoint(self):
+        self.request_mock.get.return_value = Mock(ok=False, content=encode_response({'one': 'two'}))
+        self.request_mock.get.return_value.raise_for_status.side_effect = RuntimeError('CDNetworks API error')
+        try:
+            self.subject.get_pad_list('testToken', 'testApiKey')
+            self.fail('no exception was thrown')
+        except Exception as ex:
+            self.assertIsInstance(ex, RuntimeError)
+            self.assertEqual(str(ex), 'CDNetworks API error')
+        self.request_mock.get.assert_called_once_with(
+            params={'sessionToken': 'testToken', 'apiKey': 'testApiKey', 'output': 'json'},
+            url='https://openapi.cdnetworks.com/api/rest/pan/site/list', verify=True)
+
+    def test_select_pad_returns_selected_pad(self):
+        result = self.subject.select_pad(PADS, 'pad1.cdnet.com')
+        self.assertEqual(result, 'pad1.cdnet.com')
+
+    def test_select_pad_returns_exception_on_nonexistent_pad(self):
+        try:
+            self.subject.select_pad(PADS, 'pad3.cdnet.com')
+            self.fail("No exception was thrown")
+        except Exception as ex:
+            self.assertIsInstance(ex, ValueError)
+            self.assertEqual(str(ex), "PAD Name was not found.")
