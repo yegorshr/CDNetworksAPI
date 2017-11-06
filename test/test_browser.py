@@ -139,22 +139,22 @@ RESPONSE_SAM_OK = {
         'data': {
             'data': {
                 'details': [{
-                                'do': [{
-                                           'mode': '1',
-                                           'value': '%{_CLIENT_IP_}',
-                                           'id': 'RHO',
-                                           'on': 'URQ',
-                                           'h': 'X-Aw37jFfq32eh'}],
-                                'proc': '1',
-                                'name': 'End User IP'}, {
-                                'do': [{
-                                           'mode': '1',
-                                           'value': '%{_CLIENT_IP_}',
-                                           'id': 'RHO',
-                                           'on': 'URQ',
-                                           'h': 'X-Forwarded-For'}],
-                                'proc': '1',
-                                'name': 'End User Ip in X-Forwarded-For'}]},
+                    'do': [{
+                        'mode': '1',
+                        'value': '%{_CLIENT_IP_}',
+                        'id': 'RHO',
+                        'on': 'URQ',
+                        'h': 'X-Aw37jFfq32eh'}],
+                    'proc': '1',
+                    'name': 'End User IP'}, {
+                    'do': [{
+                        'mode': '1',
+                        'value': '%{_CLIENT_IP_}',
+                        'id': 'RHO',
+                        'on': 'URQ',
+                        'h': 'X-Forwarded-For'}],
+                    'proc': '1',
+                    'name': 'End User Ip in X-Forwarded-For'}]},
             'errors': ''},
         'resultCode': 200}}
 
@@ -162,6 +162,26 @@ RESPONSE_SAM_FAILED = {
     'PadConfigResponse': {
         'resultCode': 400,
         'data': {'errors': 'You can`t view sam rule on this pad(non_existent_pad).', 'data': {}}}}
+
+CONTRACT_RESPONSE = {'PadConfigResponse':
+                         {'resultCode': 200,
+                          'data':
+                              {'errors': '',
+                               'data': [
+                                   {'status': 'active',
+                                    'contract_name': 'CA',
+                                    'available_shield_locations': [],
+                                    'is_ssl': 0,
+                                    'self_implementable': 1, 'is_dwa': 0, 'service_category': 'CA',
+                                    'contract_no': '123123'}]}}}
+
+
+CONTRACT_RESPONSE_ERROR = {'PadConfigResponse':
+                         {'resultCode': 200,
+                          'data':
+                              {'errors': 'error'}
+                          }
+                     }
 
 
 class TestBrowser(unittest.TestCase):
@@ -319,6 +339,37 @@ class TestBrowser(unittest.TestCase):
 
         try:
             self.subject.get_sam('session_token', 'test_key', 'non_existent_pad')
+            self.fail('no exception was thrown')
+        except Exception as ex:
+            self.assertIsInstance(ex, RuntimeError)
+            self.assertEqual(str(ex), 'testError')
+
+    def test_get_contract_number_returns_contract_number(self):
+        self.request_mock.get.return_value = Mock(ok=True, content=encode_response(CONTRACT_RESPONSE))
+
+        result = self.subject.get_contract_number('session_token', 'test_key', 'CA')
+
+        self.request_mock.get.assert_called_once_with(
+            params={'sessionToken': 'session_token', 'apiKey': 'test_key', 'output': 'json'},
+            url='https://openapi.cdnetworks.com/api/rest/pan/contract/list', verify=True)
+        self.assertEqual(result, "123123")
+
+    def test_get_contract_number_raises_error_for_nonexistent_contract(self):
+        self.request_mock.get.return_value = Mock(ok=True, content=encode_response(CONTRACT_RESPONSE_ERROR))
+
+        try:
+            self.subject.get_contract_number('session_token', 'test_key', 'bad_contract')
+            self.fail('no exception was thrown')
+        except Exception as ex:
+            self.assertIsInstance(ex, ValueError)
+            self.assertEqual(str(ex), 'error')
+
+    def test_get_sam_raises_error_on_api_error(self):
+        self.request_mock.get.return_value = Mock(ok=False, content=encode_response(CONTRACT_RESPONSE_ERROR))
+
+        self.request_mock.get.return_value.raise_for_status.side_effect = RuntimeError('testError')
+        try:
+            self.subject.get_contract_number('session_token', 'test_key', 'bad_contract')
             self.fail('no exception was thrown')
         except Exception as ex:
             self.assertIsInstance(ex, RuntimeError)

@@ -80,7 +80,7 @@ class Browser(object):
             raise ValueError(error_message)
         return result
 
-    def get_contract_number(self, token, api_key):
+    def get_contract_number(self, token, api_key, contract=None):
         params = {
             'sessionToken': token,
             'apiKey': api_key,
@@ -88,6 +88,9 @@ class Browser(object):
         }
 
         contract_list = self.api_base.execute('pan/contract/list', "GET", params)
-        choosen_session = select_item_by_user(contract_list['PadConfigResponse']['data']['data'])
-        contract_number = contract_list['PadConfigResponse']['data']['data'][choosen_session]['contract_no']
+        error_message = contract_list["PadConfigResponse"]["data"]["errors"]
+        if error_message:
+            raise ValueError(error_message)
+        choosen_session = select_from_list(contract_list['PadConfigResponse']['data']['data'], contract)
+        contract_number = choosen_session['contract_no']
         return contract_number
