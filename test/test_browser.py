@@ -89,6 +89,11 @@ class TestBrowser(unittest.TestCase):
             self.assertIsInstance(ex, ValueError)
             self.assertEqual(str(ex), 'Group Name was not found.')
 
+    def test_get_pad_list_calls_proper_endpoint(self):
+        self.request_mock.get.return_value = Mock(ok=True, content=encode_response({'one': 'two'}))
 
-if __name__ == '__main__':
-    unittest.main()
+        self.subject.get_pad_list('testToken', 'testApiKey')
+
+        self.request_mock.get.assert_called_once_with(
+            params={'sessionToken': 'testToken', 'apiKey': 'testApiKey', 'output': 'json'},
+            url='https://openapi.cdnetworks.com/api/rest/pan/site/list', verify=True)
