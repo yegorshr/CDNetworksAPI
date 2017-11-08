@@ -1,7 +1,7 @@
 import unittest
 import cdnetworks
 from unittest.mock import patch, Mock
-from test.helper import encode_response, GET_PAD_RESPONSE, ADD_PAD_ALIAS_FAILED_RESPONSE
+from test.helper import encode_response, GET_PAD_RESPONSE, ADD_PAD_ALIAS_FAILED_RESPONSE, EMPTY_PAD
 
 
 class TestActions(unittest.TestCase):
@@ -59,6 +59,13 @@ class TestActions(unittest.TestCase):
         self.assertIn('testDomain', aliases)
         self.assertIn('alias1.url.com', aliases)
 
+    def test_add_alias_to_pad_adds_alias_to_empty_pad(self):
+        self.request_mock.post.return_value = Mock(ok=True, content=encode_response(EMPTY_PAD))
+
+        result = self.subject.add_alias_to_pad(EMPTY_PAD, 'testPadName', 'testDomain')
+
+        self.assertEqual('testDomain', result['PadConfigResponse']['data']['data']['pad_aliases'])
+
     def test_add_alias_to_pad_calls_proper_endpoint(self):
         self.request_mock.post.return_value = Mock(ok=True, content=encode_response(GET_PAD_RESPONSE))
         self.subject.add_alias_to_pad(GET_PAD_RESPONSE, 'testPadName', 'testDomain')
@@ -69,6 +76,7 @@ class TestActions(unittest.TestCase):
             'apiKey': 'testApiKey',
             'pad_aliases': 'alias1.url.com\ntestDomain',
             'pad': 'testPadName'}, url='https://openapi.cdnetworks.com/api/rest/pan/site/v2/edit')
+
 
     def test_add_alias_to_pad_raises_error_on_api_error(self):
         post_mock = self.request_mock.post

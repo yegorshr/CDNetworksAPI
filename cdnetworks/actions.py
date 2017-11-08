@@ -28,12 +28,12 @@ class Actions(object):
             'sessionToken': self.session_token,
             'apiKey': self.api_key,
             'pad': pad_name,
-            'pad_aliases': "\n".join(existing_aliases),
+            'pad_aliases': "\n".join(existing_aliases).lstrip("\n"),
             'output': self.api_base.APIFORMAT
         }
         response = self.api_base.execute('pan/site/v2/edit', "POST", params)
         if response['PadConfigResponse']['resultCode'] == 200:
-            pad['PadConfigResponse']['data']['data']['pad_aliases'] = "\n".join(existing_aliases)
+            pad['PadConfigResponse']['data']['data']['pad_aliases'] = "\n".join(existing_aliases).lstrip("\n")
         else:
             raise ValueError(response['PadConfigResponse']['data']['errors']['general'])
         return pad
