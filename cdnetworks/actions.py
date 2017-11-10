@@ -45,3 +45,22 @@ class Actions(object):
             'sam_json': rule,
             'output': self.api_base.APIFORMAT}
         return self.api_base.execute('pan/sam/' + dest_pad_name + '/add', "POST", params)
+
+    def push_pad_configuration(self, pad, production=False):
+        params = {
+            'sessionToken': self.session_token,
+            'apiKey': self.api_key,
+            'pad': pad,
+            'output': self.api_base.APIFORMAT
+        }
+        target_environment = "Production" if production else "Staging"
+        return self.api_base.execute('pan/site/push' + target_environment, "POST", params)
+
+    def get_deploy_status(self, pad):
+        params = {
+            'sessionToken': self.session_token,
+            'apiKey': self.api_key,
+            'pad': pad,
+            'output': self.api_base.APIFORMAT
+        }
+        return self.api_base.execute("pan/site/deployStatus", "GET", params)

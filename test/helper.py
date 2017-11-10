@@ -170,11 +170,11 @@ CONTRACT_RESPONSE = {'PadConfigResponse':
                                     'self_implementable': 1, 'is_dwa': 0, 'service_category': 'CA',
                                     'contract_no': '123123'}]}}}
 CONTRACT_RESPONSE_ERROR = {'PadConfigResponse':
-                         {'resultCode': 200,
-                          'data':
-                              {'errors': 'error'}
-                          }
-                     }
+                               {'resultCode': 200,
+                                'data':
+                                    {'errors': 'error'}
+                                }
+                           }
 
 ADD_PAD_ALIAS_FAILED_RESPONSE = {
     'PadConfigResponse': {
@@ -271,3 +271,23 @@ EMPTY_PAD = {
                 'deny_direct_user_request': False,
                 'deploy_status': 'New',
                 'buffer_secs': -1}}}}
+
+PUSH_RESPONSE = {'PadConfigResponse': {'data': {'data': {'details': 'You have requested to push the PAD'
+                                                                    ' configuration to our staging servers. '
+                                                                    'Please wait a few mins, as the '
+                                                                    ' push is in progress.'},
+                                                'errors': ''},
+                                       'resultCode': 200}
+                 }
+
+STATUS_RESPONSE = {'PadConfigResponse': {'data': {'data': {'comment': 'Validating PAD '
+                                                                      'configuration. The PAD is '
+                                                                      'not editable until the '
+                                                                      'job is done.',
+                                                           'deploy_status': 'Pushing to Staging',
+                                                           'error_message': '',
+                                                           'pad': 'testPadName',
+                                                           'push_completion_rate': '0',
+                                                           'test_nodes': []},
+                                                  'errors': ''},
+                                         'resultCode': 200}}

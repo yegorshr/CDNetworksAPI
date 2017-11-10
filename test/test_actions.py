@@ -1,7 +1,8 @@
 import unittest
 import cdnetworks
 from unittest.mock import patch, Mock
-from test.helper import encode_response, GET_PAD_RESPONSE, ADD_PAD_ALIAS_FAILED_RESPONSE, EMPTY_PAD
+from test.helper import encode_response, GET_PAD_RESPONSE, ADD_PAD_ALIAS_FAILED_RESPONSE, EMPTY_PAD, PUSH_RESPONSE,\
+    STATUS_RESPONSE
 
 
 class TestActions(unittest.TestCase):
@@ -77,7 +78,6 @@ class TestActions(unittest.TestCase):
             'pad_aliases': 'alias1.url.com\ntestDomain',
             'pad': 'testPadName'}, url='https://openapi.cdnetworks.com/api/rest/pan/site/v2/edit')
 
-
     def test_add_alias_to_pad_raises_error_on_api_error(self):
         post_mock = self.request_mock.post
         post_mock.return_value = Mock(ok=False, content=encode_response(GET_PAD_RESPONSE))
@@ -123,3 +123,57 @@ class TestActions(unittest.TestCase):
             data={'sessionToken': 'testSessionToken', 'apiKey': 'testApiKey', 'sam_json': {'one': 'two'},
                   'output': 'json'}, url='https://openapi.cdnetworks.com/api/rest/pan/sam/testPadName/add')
 
+    def test_push_pad_configuration_pushes_to_staging_when_prod_is_false(self):
+        post_mock = self.request_mock.post
+        post_mock.return_value = Mock(ok=True, content=encode_response(PUSH_RESPONSE))
+
+        self.subject.push_pad_configuration('testPadName', False)
+        post_mock.assert_called_once_with(
+            data={'sessionToken': 'testSessionToken', 'apiKey': 'testApiKey', 'pad': 'testPadName',
+                  'output': 'json'}, url='https://openapi.cdnetworks.com/api/rest/pan/site/pushStaging')
+
+    def test_push_pad_configuration_pushes_to_prod_when_prod_is_true(self):
+        post_mock = self.request_mock.post
+        post_mock.return_value = Mock(ok=True, content=encode_response(PUSH_RESPONSE))
+
+        self.subject.push_pad_configuration('testPadName', True)
+        post_mock.assert_called_once_with(
+            data={'sessionToken': 'testSessionToken', 'apiKey': 'testApiKey', 'pad': 'testPadName',
+                  'output': 'json'}, url='https://openapi.cdnetworks.com/api/rest/pan/site/pushProduction')
+
+    def test_push_pad_configuration_raises_exception_on_api_error(self):
+        post_mock = self.request_mock.post
+        post_mock.return_value = Mock(ok=False)
+        post_mock.return_value.raise_for_status.side_effect = RuntimeError('error')
+
+        try:
+            self.subject.push_pad_configuration('testPadName', True)
+        except Exception as ex:
+            self.assertIsInstance(ex, RuntimeError)
+            self.assertEqual(str(ex), 'error')
+        post_mock.assert_called_once_with(
+            data={'sessionToken': 'testSessionToken', 'apiKey': 'testApiKey', 'pad': 'testPadName',
+                  'output': 'json'}, url='https://openapi.cdnetworks.com/api/rest/pan/site/pushProduction')
+
+    def test_get_deploy_status_returns_pad_status(self):
+        get_mock = self.request_mock.get
+        get_mock.return_value = Mock(ok=True, content=encode_response(STATUS_RESPONSE))
+        get_mock.return_value.raise_for_status.side_effect = RuntimeError('error')
+
+        padStatus = self.subject.get_deploy_status('testPadName')
+
+        self.assertEqual(padStatus, STATUS_RESPONSE)
+
+    def test_get_deploy_status_raises_exception_on_api_error(self):
+        get_mock = self.request_mock.get
+        get_mock.return_value = Mock(ok=False)
+        get_mock.return_value.raise_for_status.side_effect = RuntimeError('error')
+
+        try:
+            self.subject.get_deploy_status('testPadName')
+        except Exception as ex:
+            self.assertIsInstance(ex, RuntimeError)
+            self.assertEqual(str(ex), 'error')
+        get_mock.assert_called_once_with(
+            params={'sessionToken': 'testSessionToken', 'apiKey': 'testApiKey', 'pad': 'testPadName', 'output': 'json'},
+            url='https://openapi.cdnetworks.com/api/rest/pan/site/deployStatus', verify=True)
