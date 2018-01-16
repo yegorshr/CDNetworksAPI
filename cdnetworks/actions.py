@@ -22,7 +22,7 @@ class Actions(object):
 
     def add_alias_to_pad(self, pad, pad_name, domain):
         existing_aliases = pad['PadConfigResponse']['data']['data']['pad_aliases'].split("\n")
-        existing_aliases.append(domain)
+        existing_aliases = existing_aliases + domain.split("\n")
         existing_aliases = sorted(set(existing_aliases))
         params = {
             'sessionToken': self.session_token,
